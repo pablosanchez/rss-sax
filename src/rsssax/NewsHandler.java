@@ -14,19 +14,25 @@ public class NewsHandler extends DefaultHandler {
     private static final String DESCRIPTION_TAG = "description";
     private static final String PUB_DATE_TAG = "pubDate";
     private static final String CATEGORY_TAG = "category";
+    private static final String CHANNEL_TAG = "channel";
 
     private StringBuilder buffer;
     private List<New> news;
+    private New currentNew;
 
-    public NewsHandler() {
+    private ChannelHandler channelHandler;
+
+    public NewsHandler(ChannelHandler channelHandler) {
         buffer = new StringBuilder();
         news = new ArrayList<>();
+        this.channelHandler = channelHandler;
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         switch (qName) {
             case TITLE_TAG:
+                currentNew = new New();
                 buffer.delete(0, buffer.length());
                 break;
             case URL_TAG:
@@ -53,20 +59,24 @@ public class NewsHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         switch (qName) {
             case TITLE_TAG:
-                System.out.println("Titulo: " + buffer.toString());
+                currentNew.setTitle(buffer.toString());
                 break;
             case URL_TAG:
-                System.out.println("Url: " + buffer.toString());
+                currentNew.setLink(buffer.toString());
                 break;
             case DESCRIPTION_TAG:
-                System.out.println("Description: " + buffer.toString());
+                currentNew.setDescription(buffer.toString());
                 break;
             case PUB_DATE_TAG:
-                System.out.println("Publication date: " + buffer.toString());
+                currentNew.setPubDate(buffer.toString());
                 break;
             case CATEGORY_TAG:
-                System.out.println("Category: " + buffer.toString());
+                currentNew.setCategory(buffer.toString());
+                news.add(currentNew);
                 break;
+            case CHANNEL_TAG:
+                channelHandler.endElement(uri, localName, qName);
+                channelHandler.restore();
         }
     }
 

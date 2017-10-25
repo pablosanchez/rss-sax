@@ -12,6 +12,8 @@ public class RSSSax {
 
     private static final String RSS_URL = "http://www.europapress.es/rss/rss.aspx";
 
+    private ChannelHandler channelHandler;
+
     private RSSSax() {}
 
     public static void main(String[] args) {
@@ -21,6 +23,7 @@ public class RSSSax {
     private void onInitialize() {
         try {
             initSAXParser(RSS_URL);
+            printNews();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -37,6 +40,19 @@ public class RSSSax {
 
         SAXParserFactory spf = SAXParserFactory.newInstance();
         SAXParser parser = spf.newSAXParser();
-        parser.parse(new URL(url).openStream(), new NewsHandler());
+        channelHandler = new ChannelHandler(parser.getXMLReader());
+        parser.parse(new URL(url).openStream(), channelHandler);
+    }
+
+    private void printNews() {
+        System.out.println("Noticias");
+        for (int i = 0; i < channelHandler.getNews().size(); i++) {
+            System.out.println("\tNoticia " + (i+1));
+            System.out.println("\t\tTitulo: " + channelHandler.getNews().get(i).getTitle());
+            System.out.println("\t\tUrl: " + channelHandler.getNews().get(i).getLink());
+            System.out.println("\t\tDescripcion: " + channelHandler.getNews().get(i).getDescription());
+            System.out.println("\t\tFecha de publicacion: " + channelHandler.getNews().get(i).getPubDate());
+            System.out.println("\t\tCategoria: " + channelHandler.getNews().get(i).getCategory());
+        }
     }
 }
