@@ -4,27 +4,22 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class NewsHandler extends DefaultHandler {
 
+    private static final String ITEM_TAG = "item";
     private static final String TITLE_TAG = "title";
     private static final String URL_TAG = "link";
     private static final String DESCRIPTION_TAG = "description";
     private static final String PUB_DATE_TAG = "pubDate";
     private static final String CATEGORY_TAG = "category";
-    private static final String CHANNEL_TAG = "channel";
 
     private StringBuilder buffer;
-    private List<New> news;
     private New currentNew;
 
     private ChannelHandler channelHandler;
 
     public NewsHandler(ChannelHandler channelHandler) {
         buffer = new StringBuilder();
-        news = new ArrayList<>();
         this.channelHandler = channelHandler;
     }
 
@@ -72,15 +67,12 @@ public class NewsHandler extends DefaultHandler {
                 break;
             case CATEGORY_TAG:
                 currentNew.setCategory(buffer.toString());
-                news.add(currentNew);
                 break;
-            case CHANNEL_TAG:
+            case ITEM_TAG:
+                channelHandler.addNew(currentNew);
                 channelHandler.endElement(uri, localName, qName);
                 channelHandler.restore();
+                break;
         }
-    }
-
-    public List<New> getNews() {
-        return news;
     }
 }
