@@ -1,6 +1,6 @@
 package rsssax;
 
-public class New {
+public class ItemNew {
 
     private String title;
     private String link;
@@ -8,7 +8,7 @@ public class New {
     private String pubDate;
     private String category;
 
-    public New() {}
+    public ItemNew() {}
 
     public String getTitle() {
         return title;

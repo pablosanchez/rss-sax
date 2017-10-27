@@ -8,6 +8,10 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class starts parsing the XML document and stores channel info.
+ * Every time it encounters <item> tag, it gives the control to NewsHandler
+ */
 public class ChannelHandler extends DefaultHandler {
 
     private static final String TITLE_TAG = "title";
@@ -19,20 +23,23 @@ public class ChannelHandler extends DefaultHandler {
     private StringBuilder buffer;
     private boolean channelInfoRead;  // Indicates whether channel info has been read in order not to print out image info (which has the same tags)
 
-    private List<New> news;
-    private String channelTitle;
+    private Channel channel;
+    private List<ItemNew> news;
 
     public ChannelHandler(XMLReader xmlReader) {
         this.xmlReader = xmlReader;
         buffer = new StringBuilder();
-        this.news = new ArrayList<>();
         channelInfoRead = false;
+        news = new ArrayList<>();
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         switch (qName) {
             case TITLE_TAG:
+                if (!channelInfoRead) {
+                    channel = new Channel();
+                }
                 buffer.delete(0, buffer.length());
                 break;
             case URL_TAG:
@@ -41,7 +48,7 @@ public class ChannelHandler extends DefaultHandler {
             case DESCRIPTION_TAG:
                 buffer.delete(0, buffer.length());
                 break;
-            case ITEM_TAG:
+            case ITEM_TAG:  // Every item is handled by NewsHandler
                 NewsHandler newsHandler = new NewsHandler(this);
                 xmlReader.setContentHandler(newsHandler);
                 newsHandler.startElement(uri, localName, qName, attributes);
@@ -59,38 +66,36 @@ public class ChannelHandler extends DefaultHandler {
         switch (qName) {
             case TITLE_TAG:
                 if (!channelInfoRead) {
-                    System.out.println("Informacion del canal");
-                    channelTitle = buffer.toString();
-                    System.out.println("\tTitulo: " + channelTitle);
+                    channel.setTitle(buffer.toString());
                 }
                 break;
             case URL_TAG:
                 if (!channelInfoRead) {
-                    System.out.println("\tUrl: " + buffer.toString());
+                    channel.setLink(buffer.toString());
                 }
                 break;
             case DESCRIPTION_TAG:
                 if (!channelInfoRead) {
-                    System.out.println("\tDescripcion: " + buffer.toString());
+                    channel.setDescription(buffer.toString());
                 }
                 channelInfoRead = true;  // Channel info has been read
                 break;
         }
     }
 
-    public void addNew(New currentNew) {
-        news.add(currentNew);
-    }
-
     public void restore() {
         xmlReader.setContentHandler(this);
     }
 
-    public List<New> getNews() {
-        return news;
+    public void addNew(ItemNew currentItemNew) {
+        news.add(currentItemNew);
     }
 
-    public String getChannelTitle() {
-        return channelTitle;
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public List<ItemNew> getNews() {
+        return news;
     }
 }

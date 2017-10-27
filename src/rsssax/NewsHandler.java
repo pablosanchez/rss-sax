@@ -4,6 +4,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * This class parses each item tag, storing its information
+ */
 public class NewsHandler extends DefaultHandler {
 
     private static final String ITEM_TAG = "item";
@@ -13,21 +16,20 @@ public class NewsHandler extends DefaultHandler {
     private static final String PUB_DATE_TAG = "pubDate";
     private static final String CATEGORY_TAG = "category";
 
-    private StringBuilder buffer;
-    private New currentNew;
-
     private ChannelHandler channelHandler;
+    private StringBuilder buffer;
+    private ItemNew currentItemNew;
 
     public NewsHandler(ChannelHandler channelHandler) {
-        buffer = new StringBuilder();
         this.channelHandler = channelHandler;
+        buffer = new StringBuilder();
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         switch (qName) {
             case TITLE_TAG:
-                currentNew = new New();
+                currentItemNew = new ItemNew();
                 buffer.delete(0, buffer.length());
                 break;
             case URL_TAG:
@@ -54,22 +56,22 @@ public class NewsHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         switch (qName) {
             case TITLE_TAG:
-                currentNew.setTitle(buffer.toString());
+                currentItemNew.setTitle(buffer.toString());
                 break;
             case URL_TAG:
-                currentNew.setLink(buffer.toString());
+                currentItemNew.setLink(buffer.toString());
                 break;
             case DESCRIPTION_TAG:
-                currentNew.setDescription(buffer.toString());
+                currentItemNew.setDescription(buffer.toString());
                 break;
             case PUB_DATE_TAG:
-                currentNew.setPubDate(buffer.toString());
+                currentItemNew.setPubDate(buffer.toString());
                 break;
             case CATEGORY_TAG:
-                currentNew.setCategory(buffer.toString());
+                currentItemNew.setCategory(buffer.toString());
                 break;
             case ITEM_TAG:
-                channelHandler.addNew(currentNew);
+                channelHandler.addNew(currentItemNew);
                 channelHandler.endElement(uri, localName, qName);
                 channelHandler.restore();
                 break;
